@@ -6,5 +6,6 @@ const toolsController = new ToolsController();
 
 router.post("/tools", toolsController.create);
 router.get("/", toolsController.show);
+router.get("/tools", toolsController.filter);
 
 export { router };
