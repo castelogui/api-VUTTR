@@ -19,6 +19,14 @@ class ToolsController {
 
     return res.status(201).json(tool)
   }
+
+  async show(req: Request, res: Response) {
+    const toolRepository = getCustomRepository(ToolsRepository);
+
+    const all = await toolRepository.find();
+
+    return res.json(all);
+  }
 }
 
 export { ToolsController };
