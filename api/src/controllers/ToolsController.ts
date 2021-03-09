@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getCustomRepository } from "typeorm";
+import { getCustomRepository, Like } from "typeorm";
 import { ToolsRepository } from "../repositories/ToolsRepository";
 
 class ToolsController {
@@ -17,7 +17,7 @@ class ToolsController {
 
     await toolRepository.save(tool);
 
-    return res.status(201).json(tool)
+    return res.status(201).json(tool);
   }
 
   async show(req: Request, res: Response) {
@@ -26,6 +26,18 @@ class ToolsController {
     const all = await toolRepository.find();
 
     return res.json(all);
+  }
+
+  async filter(req: Request, res: Response) {
+    let tags = req.query.tags;
+
+    const toolRepository = getCustomRepository(ToolsRepository);
+
+    const toolsForTag = await toolRepository.find({
+      where: { tags: Like(`%${tags}%`) },
+    });
+
+    return res.json(toolsForTag);
   }
 }
 
