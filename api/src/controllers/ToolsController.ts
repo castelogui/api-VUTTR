@@ -29,7 +29,7 @@ class ToolsController {
   }
 
   async filter(req: Request, res: Response) {
-    let tags = req.query.tags;
+    const tags = req.query.tags;
 
     const toolRepository = getCustomRepository(ToolsRepository);
 
@@ -38,6 +38,29 @@ class ToolsController {
     });
 
     return res.json(toolsForTag);
+  }
+
+  async delete(req: Request, res: Response) {
+    const { id } = req.params;
+
+    const toolRepository = getCustomRepository(ToolsRepository);
+
+    const tool = await toolRepository.findOne({
+      where: { id: id },
+    });
+
+    if (!tool) {
+      return res.status(404).json({ error: "Id not found" });
+    } else {
+      await toolRepository
+        .createQueryBuilder()
+        .delete()
+        .from("tools")
+        .where("id = :id", { id: id })
+        .execute();
+
+      return res.status(204).json("Deleted!");
+    }
   }
 }
 
