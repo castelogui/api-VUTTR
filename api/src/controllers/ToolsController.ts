@@ -1,10 +1,27 @@
 import { Request, Response } from "express";
 import { getCustomRepository, Like } from "typeorm";
 import { ToolsRepository } from "../repositories/ToolsRepository";
+import { AppError } from "../errors/AppError";
+import * as yup from "yup";
 
 class ToolsController {
   async create(req: Request, res: Response) {
     const { title, link, description, tags } = req.body;
+
+    const schema = yup.object().shape({
+      title: yup.string().min(1),
+      link: yup.string().url(),
+      description: yup.string().min(1),
+      tags: yup.array().min(1),
+    });
+    try {
+      await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      throw new AppError(
+        `Alguns dados não foram preenchidos corretamente. ${err}`,
+        400
+      );
+    }
 
     const toolRepository = getCustomRepository(ToolsRepository);
 
@@ -25,6 +42,10 @@ class ToolsController {
 
     const all = await toolRepository.find();
 
+    if (all.length == 0) {
+      throw new AppError("Nenhuma ferramenta encontrada!", 400);
+    }
+
     return res.json(all);
   }
 
@@ -36,6 +57,13 @@ class ToolsController {
     const toolsForTag = await toolRepository.find({
       where: { tags: Like(`%${tags}%`) },
     });
+
+    if (toolsForTag.length == 0) {
+      throw new AppError(
+        `Nenhuma ferramenta encontrada com a tag "${tags}"`,
+        400
+      );
+    }
 
     return res.json(toolsForTag);
   }
